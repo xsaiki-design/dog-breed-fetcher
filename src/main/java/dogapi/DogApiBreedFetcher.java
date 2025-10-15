@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -25,11 +26,39 @@ public class DogApiBreedFetcher implements BreedFetcher {
      */
     @Override
     public List<String> getSubBreeds(String breed) {
-        // TODO Task 1: Complete this method based on its provided documentation
+        String url = "https://dog.ceo/api/breed/" + breed + "/list";
+        Request request = new Request.Builder()
+                .url(url) // Sets URL for the request
+                .build(); // Finalizes/makes the actual request object that I can send
+
+        try (Response response = client.newCall(request).execute()){
+            if  (!response.isSuccessful()){
+                throw new BreedNotFoundException("Breed Not Found");
+            }
+            else{
+                String jsonString = response.body().string();
+                JSONObject json= new JSONObject(jsonString);
+
+                JSONArray messageArray = json.getJSONArray("message");
+                //messageArray is a JsonArray of all the subbreeds
+                ArrayList<String> subBreeds = new ArrayList<>();
+                for(int i = 0; i< messageArray.length(); i++){
+                    subBreeds.add(messageArray.getString(i));
+
+                    // JsonArray is not an iterable, need to use i to iterate over it
+                }
+                return subBreeds;
+
+            }
+
+        } catch (IOException e) {
+            throw new BreedNotFoundException("Coulden't fetch sub-breeds for:" + breed);
+        }
+
+        // DONE Task 1: Complete this method based on its provided documentation
         //      and the documentation for the dog.ceo API. You may find it helpful
         //      to refer to the examples of using OkHttpClient from the last lab,
         //      as well as the code for parsing JSON responses.
         // return statement included so that the starter code can compile and run.
-        return new ArrayList<>();
     }
 }
